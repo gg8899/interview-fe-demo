@@ -1,22 +1,29 @@
-name: Build and Deploy
+name: CI/CD Pipeline
+
 on:
   push:
     branches:
-      - todolist-master
+      - main # 触发条件，当代码推送到 main 分支时
+
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest # 指定运行环境
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2 # 检出代码
 
-      - name: Install and Build
-        run: |
-          npm install
-          npm run build
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16" # 指定 Node.js 版本
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with: 
-          personal_token: ${{ secrets.ACCESS_TOKEN }}
-          publish_dir: ./dist
+      - name: Install dependencies
+        run: pnpm install # 使用 pnpm 安装依赖
+
+      - name: Build
+        run: pnpm run build # 运行构建命令
+
+  deploy:
+    runs-on: ubuntu-latest # 指定运行环境
+    needs: build # 确保在 build 完成后再执行
+    environment: github-pages # 指定部署环境
